@@ -11,7 +11,10 @@ const express = require("express"),
   subscribersController = require("./controllers/subscribersController"),
   usersController = require("./controllers/usersController"),
   coursesController = require("./controllers/coursesController"),
-  Subscriber = require("./models/subscriber");
+  Subscriber = require("./models/subscriber"),
+  expressSession = require("express-session"),
+  cookieParser = require("cookie-parser"),
+  connectFlash = require("connect-flash");
 
 mongoose.Promise = global.Promise;
 
@@ -46,6 +49,22 @@ router.use(
 
 router.use(express.json());
 router.use(homeController.logRequestPaths);
+
+router.use(cookieParser("secret_passcode"));
+router.use(expressSession({
+  secret: "secret_passcode",
+  cookie: {
+    maxAge: 4000000
+  },
+  resave: false,
+  saveUninitialized: false
+}));
+router.use(connectFlash());
+
+router.use((req, res, next) => {
+  res.locals.flashMessages = req.flash();
+  next();
+});
 
 router.get("/", homeController.index);
 router.get("/contact", homeController.getSubscriptionPage);
